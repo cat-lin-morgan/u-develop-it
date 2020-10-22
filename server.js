@@ -2,6 +2,7 @@ const express = require('express');
 const PORT = process.env.PORT || 3001;
 const app = express();
 const sqlite3 = require('sqlite3').verbose();
+const inputCheck = require('./utils/inputCheck');
 
 //middleware
 app.use(express.urlencoded({ extended: false }));
@@ -34,7 +35,7 @@ app.get('/api/candidates', (req, res) => {
 //get single candidate
 app.get('/api/candidate/:id', (req, res) => {
     const sql = `SELECT * FROM candidates
-                WHERE id = ?`;
+        WHERE id = ?`;
     const params = [req.params.id];
     db.get(sql, params, (err, row) => {
         if (err) {
@@ -47,17 +48,6 @@ app.get('/api/candidate/:id', (req, res) => {
         });
     });
 });
-
-// //create candidate
-// const sql = `INSERT INTO candidates (id, first_name, last_name, industry_connected)
-//             VALUES (?,?,?,?)`;
-// const params = [12, 'Lou', 'Reed', 1];
-// db.run(sql, params, function(err, result) {
-//     if(err) {
-//         console.log(err);
-//     }
-//     console.log(result, this.lastID);
-// })
 
 //delete a candidate
 app.delete('/api/candidate/:id', (req, res) => {
@@ -75,8 +65,32 @@ app.delete('/api/candidate/:id', (req, res) => {
     });
 });
 
+//this is an api endpoint we've just created
+//create candidate
+app.post('/api/candidate', ({ body }, res) => {
+    const errors = inputCheck(body, 'first_name', 'last_name', 'industry_connected');
+    if (errors) {
+        res.status(400).json({ error: errors });
+        return;
+    }
+    const sql = `INSERT INTO candidates (first_name, last_name, industry_connected) 
+        VALUES (?,?,?)`;
+    const params = [body.first_name, body.last_name, body.industry_connected];
+    db.run(sql, params, function(err, result) {
+        if (err) {
+            re.status(400).json({ error: err.message });
+            return;
+        }
+        res.json({
+            message: 'success',
+            data: body,
+            id: this.lastID
+        });
+    });
+});
+
 //this must always be last because it will override all the others
-//response for not found catch all!
+//response for not found query string parameter
 app.use((req, res) => {
     res.status(404).end();
 });
