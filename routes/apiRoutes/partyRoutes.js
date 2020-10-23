@@ -45,7 +45,7 @@ router.delete('/party/:id', (req, res) => {
             return;
         }
     
-        res.json({ message: 'successfully deleted', changes: this.changes });
+        res.json({ message: 'Darn deleted', changes: this.changes });
     });
 });
 

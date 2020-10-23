@@ -104,7 +104,7 @@ router.delete('/candidate/:id', (req, res) => {
             return;
         }
         res.json({
-            message: 'successfully deleted',
+            message: 'Darn deleted',
             changes: this.changes
         });
     });
